@@ -5,7 +5,7 @@ class Animator {
     static deltaTime = 0;
     static moveSpeed = 20;
     static FPSCounter = 0;
-    static FPSLimit = 30;
+    static FPSLimit = 15;
     static {
     }
     static logFPS() {
@@ -31,6 +31,7 @@ class Animator {
         Animator.FPSCounter++;
         GameManager.updatePhysics(Animator.deltaTime);
         Camera.update(Animator.deltaTime);
+        PlayerController.update(Animator.deltaTime);
         if (Animator.FPSLimit === 0)
             requestAnimationFrame(Animator.#smoothUpdate);
     }

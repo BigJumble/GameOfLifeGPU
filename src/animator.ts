@@ -4,7 +4,7 @@ class Animator{
     static deltaTime = 0;
     static moveSpeed = 20;
     static FPSCounter = 0;
-    static FPSLimit:number = 30; // 0 to disable
+    static FPSLimit:number = 15; // 0 to disable
     static {
 
     }
@@ -35,7 +35,7 @@ class Animator{
 
         GameManager.updatePhysics(Animator.deltaTime);
         Camera.update(Animator.deltaTime);
-
+        PlayerController.update(Animator.deltaTime);
         if(Animator.FPSLimit===0)
             requestAnimationFrame(Animator.#smoothUpdate);
     }
