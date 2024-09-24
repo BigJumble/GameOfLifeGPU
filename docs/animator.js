@@ -5,6 +5,7 @@ class Animator {
     static deltaTime = 0;
     static moveSpeed = 20;
     static FPSCounter = 0;
+    static FPSLimit = 30;
     static {
     }
     static logFPS() {
@@ -12,6 +13,10 @@ class Animator {
             console.log("FPS:", this.FPSCounter);
             this.FPSCounter = 0;
         }, 1000);
+        if (this.FPSLimit !== 0)
+            setInterval(() => {
+                requestAnimationFrame(Animator.#smoothUpdate);
+            }, 1000 / Animator.FPSLimit);
     }
     static update() {
         if (this.isUpdating)
@@ -24,9 +29,9 @@ class Animator {
         Animator.deltaTime = (timestamp - Animator.lastTimestamp) / 1000;
         Animator.lastTimestamp = timestamp;
         Animator.FPSCounter++;
-        PlayerController.update(Animator.deltaTime);
-        GameManager.updatePhysics(1 / 240);
+        GameManager.updatePhysics(Animator.deltaTime);
         Camera.update(Animator.deltaTime);
-        requestAnimationFrame(Animator.#smoothUpdate);
+        if (Animator.FPSLimit === 0)
+            requestAnimationFrame(Animator.#smoothUpdate);
     }
 }

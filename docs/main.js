@@ -1,8 +1,12 @@
 "use strict";
-function main() {
+async function main() {
+    if (!navigator.gpu) {
+        throw new Error("WebGPU not supported on this browser.");
+    }
     Camera.init();
     Actions.init();
-    GameManager.init();
+    await GameManager.init();
     Animator.update();
+    Animator.logFPS();
 }
 main();

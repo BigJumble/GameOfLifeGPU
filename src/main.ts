@@ -5,11 +5,10 @@ async function main(){
     }
 
 
-    await Camera.init();
-    await Actions.init();
+    Camera.init();
+    Actions.init();
     await GameManager.init();
-
-    
-    await Animator.update();
+    Animator.update();
+    Animator.logFPS();
 }
 main();

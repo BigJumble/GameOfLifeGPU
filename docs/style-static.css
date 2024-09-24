@@ -24,3 +24,7 @@ body {
     font-style: normal;
     text-anchor: middle;
 }
+canvas{
+    image-rendering: pixelated;
+    width: 100vw;
+}
