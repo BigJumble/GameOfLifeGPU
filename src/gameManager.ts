@@ -21,7 +21,13 @@ class GameManager {
     static renderPipeline: GPURenderPipeline;
     static computePipeline: GPUComputePipeline;
     static step: number = 0;
+    static uniformBufferPaint: GPUBuffer;
 
+    static isDrawing:boolean = false;
+    static computePipelineDraw: GPUComputePipeline;
+    static computeBindGroupLayoutDraw: GPUBindGroupLayout;
+    static computeBindGroupDrawA: GPUBindGroup;
+    static computeBindGroupDrawB: GPUBindGroup;
 
 
     static async init() {
@@ -53,12 +59,19 @@ class GameManager {
         
         this.device.queue.writeBuffer(this.uniformBuffer, 0, new Uint32Array([this.WIDTH, this.HEIGHT]));
 
+        this.uniformBufferPaint = this.device.createBuffer({
+            size: 8,
+            usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        });
+        
+        this.device.queue.writeBuffer(this.uniformBufferPaint, 0, new Uint32Array([0, 0]));
+
         const cellStateSize = this.WIDTH * this.HEIGHT * Uint32Array.BYTES_PER_ELEMENT;
         const cellStateStorage = new Uint32Array(this.WIDTH * this.HEIGHT);
         
         // Initialize with random state
         for (let i = 0; i < cellStateStorage.length; i++) {
-            cellStateStorage[i] = Math.random() > 0.2 ? 1 : 0;
+            cellStateStorage[i] = Math.random() > 0.3 ? 1 : 0;
         }
     
         const cellStateBufferA = this.device.createBuffer({
@@ -81,6 +94,14 @@ class GameManager {
             },
         });
 
+        this.computePipelineDraw = this.device.createComputePipeline({
+            layout: "auto",
+            compute: {
+                module: this.shaderModule,
+                entryPoint: "computeDraw",
+            },
+        });
+
         this.renderPipeline = this.device.createRenderPipeline({
             layout: "auto",
             vertex: {
@@ -98,14 +119,16 @@ class GameManager {
         });
 
         this.computeBindGroupLayout = this.computePipeline.getBindGroupLayout(0);
+        this.computeBindGroupLayoutDraw = this.computePipelineDraw.getBindGroupLayout(0);
         this.renderBindGroupLayout = this.renderPipeline.getBindGroupLayout(0);
 
         this.computeBindGroupA = this.device.createBindGroup({
             layout: this.computeBindGroupLayout,
             entries: [
                 { binding: 0, resource: { buffer: this.uniformBuffer } },
-                { binding: 1, resource: { buffer: cellStateBufferA } },
-                { binding: 2, resource: { buffer: cellStateBufferB } },
+                // { binding: 1, resource: { buffer: this.uniformBufferPaint } },
+                { binding: 2, resource: { buffer: cellStateBufferA } },
+                { binding: 3, resource: { buffer: cellStateBufferB } },
             ],
         });
     
@@ -113,8 +136,29 @@ class GameManager {
             layout: this.computeBindGroupLayout,
             entries: [
                 { binding: 0, resource: { buffer: this.uniformBuffer } },
-                { binding: 1, resource: { buffer: cellStateBufferB } },
-                { binding: 2, resource: { buffer: cellStateBufferA } },
+                // { binding: 1, resource: { buffer: this.uniformBufferPaint } },
+                { binding: 2, resource: { buffer: cellStateBufferB } },
+                { binding: 3, resource: { buffer: cellStateBufferA } },
+            ],
+        });
+
+        this.computeBindGroupDrawA = this.device.createBindGroup({
+            layout: this.computeBindGroupLayoutDraw,
+            entries: [
+                { binding: 0, resource: { buffer: this.uniformBuffer } },
+                { binding: 1, resource: { buffer: this.uniformBufferPaint } },
+                // { binding: 2, resource: { buffer: cellStateBufferA } },
+                { binding: 3, resource: { buffer: cellStateBufferB } },
+            ],
+        });
+    
+        this.computeBindGroupDrawB = this.device.createBindGroup({
+            layout: this.computeBindGroupLayoutDraw,
+            entries: [
+                { binding: 0, resource: { buffer: this.uniformBuffer } },
+                { binding: 1, resource: { buffer: this.uniformBufferPaint } },
+                // { binding: 2, resource: { buffer: cellStateBufferB } },
+                { binding: 3, resource: { buffer: cellStateBufferA } },
             ],
         });
     
@@ -122,7 +166,7 @@ class GameManager {
             layout: this.renderBindGroupLayout,
             entries: [
                 { binding: 0, resource: { buffer: this.uniformBuffer } },
-                { binding: 1, resource: { buffer: cellStateBufferA } },
+                { binding: 2, resource: { buffer: cellStateBufferA } },
             ],
         });
     
@@ -130,7 +174,7 @@ class GameManager {
             layout: this.renderBindGroupLayout,
             entries: [
                 { binding: 0, resource: { buffer: this.uniformBuffer } },
-                { binding: 1, resource: { buffer: cellStateBufferB } },
+                { binding: 2, resource: { buffer: cellStateBufferB } },
             ],
         });
 
@@ -149,11 +193,31 @@ class GameManager {
 
         const commandEncoder = this.device.createCommandEncoder();
 
-        const computePass = commandEncoder.beginComputePass();
-        computePass.setPipeline(this.computePipeline);
-        computePass.setBindGroup(0, this.step % 2 === 0 ? this.computeBindGroupA : this.computeBindGroupB);
-        computePass.dispatchWorkgroups(Math.ceil(this.WIDTH / 8), Math.ceil(this.HEIGHT / 8));
-        computePass.end();
+        if(!this.isDrawing)
+        {
+            const computePass = commandEncoder.beginComputePass();
+            computePass.setPipeline(this.computePipeline);
+            computePass.setBindGroup(0, this.step % 2 === 0 ? this.computeBindGroupA : this.computeBindGroupB);
+            computePass.dispatchWorkgroups(Math.ceil(this.WIDTH / 8), Math.ceil(this.HEIGHT / 8));
+            computePass.end();
+    
+        }
+        else{
+
+            const xcord = Math.floor(Camera.screenMouseX/this.canvas.getBoundingClientRect().width * this.WIDTH);
+            const ycord = Math.floor(Camera.screenMouseY/this.canvas.getBoundingClientRect().height * this.HEIGHT);
+            this.device.queue.writeBuffer(this.uniformBufferPaint, 0, new Uint32Array([xcord, ycord]));
+
+            const computePass = commandEncoder.beginComputePass();
+            computePass.setPipeline(this.computePipelineDraw);
+            computePass.setBindGroup(0, this.step % 2 === 1 ? this.computeBindGroupDrawA : this.computeBindGroupDrawB);
+            computePass.dispatchWorkgroups(1);
+            computePass.end();
+            this.isDrawing = false;
+            this.step++;
+
+        }
+
 
         const renderPassDescriptor: GPURenderPassDescriptor = {
             colorAttachments: [

@@ -13,17 +13,17 @@ class Animator {
             console.log("FPS:", this.FPSCounter);
             this.FPSCounter = 0;
         }, 1000);
-        if (this.FPSLimit !== 0)
-            setInterval(() => {
-                requestAnimationFrame(Animator.#smoothUpdate);
-            }, 1000 / Animator.FPSLimit);
     }
     static update() {
         if (this.isUpdating)
             return;
         this.isUpdating = true;
         this.lastTimestamp = performance.now();
-        requestAnimationFrame((timestamp) => this.#smoothUpdate(timestamp));
+        setInterval(() => {
+            if (Animator.FPSLimit !== 0) {
+                requestAnimationFrame(Animator.#smoothUpdate);
+            }
+        }, 1000 / Animator.FPSLimit);
     }
     static #smoothUpdate(timestamp) {
         Animator.deltaTime = (timestamp - Animator.lastTimestamp) / 1000;

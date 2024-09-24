@@ -5,12 +5,21 @@ class PlayerController {
     static playerSize = 40;
     static speed = 200;
 
+    static fpsLimitBackup:number;
+    static init()
+    {
+        this.fpsLimitBackup = Animator.FPSLimit;
+    }
+
     static update(deltaTime: number) {
-        if (Actions.isClicked(PlayerAction.Left)) {
-            console.log("a");
+
+        if (Actions.isHeld(PlayerAction.Primary)) {
+            Animator.FPSLimit = 0;
+            GameManager.isDrawing = true;
         }
-        if (Actions.isHeld(PlayerAction.Right)) {
-            console.log("a");
+        else
+        {
+            Animator.FPSLimit = this.fpsLimitBackup;
         }
     }
 }

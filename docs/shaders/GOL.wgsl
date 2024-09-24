@@ -4,8 +4,18 @@ struct Uniforms {
 };
 
 @group(0) @binding(0) var<uniform> uniforms : Uniforms;
-@group(0) @binding(1) var<storage, read> cellsIn : array<u32>;
-@group(0) @binding(2) var<storage, read_write> cellsOut : array<u32>;
+@group(0) @binding(1) var<uniform> paint : vec2<u32>;
+@group(0) @binding(2) var<storage, read> cellsIn : array<u32>;
+@group(0) @binding(3) var<storage, read_write> cellsOut : array<u32>;
+
+@compute @workgroup_size(1)
+fn computeDraw() {
+    if (paint.x >= uniforms.width || paint.y >= uniforms.height) {
+        return;
+    }
+    let index = paint.y * uniforms.width + paint.x;
+    cellsOut[index] = 1u;
+}
 
 fn getCellState(x: u32, y: u32) -> u32 {
     let index = y * uniforms.width + x;

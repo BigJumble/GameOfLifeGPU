@@ -6,7 +6,7 @@ async function main() {
     Camera.init();
     Actions.init();
     await GameManager.init();
+    PlayerController.init();
     Animator.update();
-    Animator.logFPS();
 }
 main();
