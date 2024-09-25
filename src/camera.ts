@@ -13,7 +13,7 @@ class Camera {
 
     static init() {
 
-        window.addEventListener("mousemove",(e)=>this.#handleMousePos(e))
+        window.addEventListener("mousemove", (e)=>this.#handleMousePos(e))
     }
 
     static resize()

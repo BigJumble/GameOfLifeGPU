@@ -1,4 +1,3 @@
-"use strict";
 class GameManager {
     static canvas;
     static WIDTH = 512;
@@ -32,9 +31,9 @@ class GameManager {
         this.adapter = adapter;
         this.device = await adapter.requestDevice();
         this.canvas = document.getElementById("gameCanvas");
-        this.context = this.canvas.getContext("webgpu");
         this.canvas.width = this.WIDTH;
         this.canvas.height = this.HEIGHT;
+        this.context = this.canvas.getContext("webgpu");
         this.presentationFormat = navigator.gpu.getPreferredCanvasFormat();
         this.context.configure({
             device: this.device,

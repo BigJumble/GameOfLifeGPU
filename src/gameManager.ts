@@ -38,11 +38,13 @@ class GameManager {
         this.adapter = adapter;
         this.device = await adapter.requestDevice();
         this.canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
-        this.context = this.canvas.getContext("webgpu") as GPUCanvasContext;
         this.canvas.width = this.WIDTH;
         this.canvas.height = this.HEIGHT;
 
+        this.context = this.canvas.getContext("webgpu") as GPUCanvasContext;
+
         this.presentationFormat = navigator.gpu.getPreferredCanvasFormat();
+        
         this.context.configure({
             device: this.device,
             format: this.presentationFormat,
@@ -207,7 +209,7 @@ class GameManager {
             const xcord = Math.floor(Camera.screenMouseX/this.canvas.getBoundingClientRect().width * this.WIDTH);
             const ycord = Math.floor(Camera.screenMouseY/this.canvas.getBoundingClientRect().height * this.HEIGHT);
             this.device.queue.writeBuffer(this.uniformBufferPaint, 0, new Uint32Array([xcord, ycord]));
-
+            
             const computePass = commandEncoder.beginComputePass();
             computePass.setPipeline(this.computePipelineDraw);
             computePass.setBindGroup(0, this.step % 2 === 1 ? this.computeBindGroupDrawA : this.computeBindGroupDrawB);

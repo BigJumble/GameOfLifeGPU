@@ -5,7 +5,6 @@ async function main(){
 
     }
 
-
     Camera.init();
     Actions.init();
     await GameManager.init();

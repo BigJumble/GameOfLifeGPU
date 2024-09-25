@@ -22,12 +22,17 @@ class Animator {
 
         this.isUpdating = true;
         this.lastTimestamp = performance.now();
-        
-        setInterval(() => {
-            if (Animator.FPSLimit !== 0) {
-                requestAnimationFrame(Animator.#smoothUpdate);
-            }
-        }, 1000 / Animator.FPSLimit);
+        if (Animator.FPSLimit !== 0) {
+            setInterval(() => {
+                if (Animator.FPSLimit !== 0) {
+                    requestAnimationFrame(Animator.#smoothUpdate);
+                }
+            }, 1000 / Animator.FPSLimit);
+        }
+        else
+        {
+            requestAnimationFrame(Animator.#smoothUpdate);
+        }
     }
     static #smoothUpdate(timestamp: number) {
         Animator.deltaTime = (timestamp - Animator.lastTimestamp) / 1000;

@@ -1,4 +1,3 @@
-"use strict";
 var PlayerAction;
 (function (PlayerAction) {
     PlayerAction["Up"] = "KeyW";

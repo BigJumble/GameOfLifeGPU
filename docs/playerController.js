@@ -1,4 +1,3 @@
-"use strict";
 class PlayerController {
     static x;
     static y;

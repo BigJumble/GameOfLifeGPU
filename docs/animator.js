@@ -1,4 +1,3 @@
-"use strict";
 class Animator {
     static isUpdating = false;
     static lastTimestamp = 0;
@@ -19,11 +18,16 @@ class Animator {
             return;
         this.isUpdating = true;
         this.lastTimestamp = performance.now();
-        setInterval(() => {
-            if (Animator.FPSLimit !== 0) {
-                requestAnimationFrame(Animator.#smoothUpdate);
-            }
-        }, 1000 / Animator.FPSLimit);
+        if (Animator.FPSLimit !== 0) {
+            setInterval(() => {
+                if (Animator.FPSLimit !== 0) {
+                    requestAnimationFrame(Animator.#smoothUpdate);
+                }
+            }, 1000 / Animator.FPSLimit);
+        }
+        else {
+            requestAnimationFrame(Animator.#smoothUpdate);
+        }
     }
     static #smoothUpdate(timestamp) {
         Animator.deltaTime = (timestamp - Animator.lastTimestamp) / 1000;

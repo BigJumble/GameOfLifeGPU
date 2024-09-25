@@ -1,4 +1,3 @@
-"use strict";
 async function main() {
     if (!navigator.gpu) {
         throw new Error("WebGPU not supported on this browser.");

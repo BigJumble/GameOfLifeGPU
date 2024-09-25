@@ -1,4 +1,3 @@
-"use strict";
 class Camera {
     static x = window.innerWidth / 2;
     static y = window.innerHeight / 2;
