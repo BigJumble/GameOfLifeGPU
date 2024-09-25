@@ -23,7 +23,7 @@ class GameManager {
     static step: number = 0;
     static uniformBufferPaint: GPUBuffer;
 
-    static isDrawing:boolean = false;
+    static isDrawing: boolean = false;
     static computePipelineDraw: GPUComputePipeline;
     static computeBindGroupLayoutDraw: GPUBindGroupLayout;
     static computeBindGroupDrawA: GPUBindGroup;
@@ -31,7 +31,7 @@ class GameManager {
 
 
     static async init() {
-        const adapter = await navigator.gpu.requestAdapter({powerPreference:"high-performance"});
+        const adapter = await navigator.gpu.requestAdapter({ powerPreference: "high-performance" });
         if (!adapter) {
             throw new Error("No appropriate GPUAdapter found.");
         }
@@ -44,7 +44,7 @@ class GameManager {
         this.context = this.canvas.getContext("webgpu") as GPUCanvasContext;
 
         this.presentationFormat = navigator.gpu.getPreferredCanvasFormat();
-        
+
         this.context.configure({
             device: this.device,
             format: this.presentationFormat,
@@ -58,29 +58,29 @@ class GameManager {
             size: 8,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
-        
+
         this.device.queue.writeBuffer(this.uniformBuffer, 0, new Uint32Array([this.WIDTH, this.HEIGHT]));
 
         this.uniformBufferPaint = this.device.createBuffer({
             size: 8,
             usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
         });
-        
+
         this.device.queue.writeBuffer(this.uniformBufferPaint, 0, new Uint32Array([0, 0]));
 
         const cellStateSize = this.WIDTH * this.HEIGHT * Uint32Array.BYTES_PER_ELEMENT;
         const cellStateStorage = new Uint32Array(this.WIDTH * this.HEIGHT);
-        
+
         // Initialize with random state
         for (let i = 0; i < cellStateStorage.length; i++) {
             cellStateStorage[i] = Math.random() > 0.3 ? 1 : 0;
         }
-    
+
         const cellStateBufferA = this.device.createBuffer({
             size: cellStateSize,
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST,
         });
-    
+
         const cellStateBufferB = this.device.createBuffer({
             size: cellStateSize,
             usage: GPUBufferUsage.STORAGE,
@@ -133,7 +133,7 @@ class GameManager {
                 { binding: 3, resource: { buffer: cellStateBufferB } },
             ],
         });
-    
+
         this.computeBindGroupB = this.device.createBindGroup({
             layout: this.computeBindGroupLayout,
             entries: [
@@ -153,7 +153,7 @@ class GameManager {
                 { binding: 3, resource: { buffer: cellStateBufferB } },
             ],
         });
-    
+
         this.computeBindGroupDrawB = this.device.createBindGroup({
             layout: this.computeBindGroupLayoutDraw,
             entries: [
@@ -163,7 +163,7 @@ class GameManager {
                 { binding: 3, resource: { buffer: cellStateBufferA } },
             ],
         });
-    
+
         this.renderBindGroupA = this.device.createBindGroup({
             layout: this.renderBindGroupLayout,
             entries: [
@@ -171,7 +171,7 @@ class GameManager {
                 { binding: 2, resource: { buffer: cellStateBufferA } },
             ],
         });
-    
+
         this.renderBindGroupB = this.device.createBindGroup({
             layout: this.renderBindGroupLayout,
             entries: [
@@ -182,34 +182,33 @@ class GameManager {
 
     }
 
-    static async #getShaderCode(dir:string): Promise<string> {
+    static async #getShaderCode(dir: string): Promise<string> {
         const response = await fetch(dir);
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         return await response.text();
-      }
+    }
 
 
     static updatePhysics(deltaTime: number) {
 
         const commandEncoder = this.device.createCommandEncoder();
 
-        if(!this.isDrawing)
-        {
+        if (!this.isDrawing) {
             const computePass = commandEncoder.beginComputePass();
             computePass.setPipeline(this.computePipeline);
             computePass.setBindGroup(0, this.step % 2 === 0 ? this.computeBindGroupA : this.computeBindGroupB);
             computePass.dispatchWorkgroups(Math.ceil(this.WIDTH / 8), Math.ceil(this.HEIGHT / 8));
             computePass.end();
-    
-        }
-        else{
 
-            const xcord = Math.floor(Camera.screenMouseX/this.canvas.getBoundingClientRect().width * this.WIDTH);
-            const ycord = Math.floor(Camera.screenMouseY/this.canvas.getBoundingClientRect().height * this.HEIGHT);
+        }
+        else {
+
+            const xcord = Math.floor(Camera.screenMouseX / this.canvas.getBoundingClientRect().width * this.WIDTH);
+            const ycord = Math.floor(Camera.screenMouseY / this.canvas.getBoundingClientRect().height * this.HEIGHT);
             this.device.queue.writeBuffer(this.uniformBufferPaint, 0, new Uint32Array([xcord, ycord]));
-            
+
             const computePass = commandEncoder.beginComputePass();
             computePass.setPipeline(this.computePipelineDraw);
             computePass.setBindGroup(0, this.step % 2 === 1 ? this.computeBindGroupDrawA : this.computeBindGroupDrawB);

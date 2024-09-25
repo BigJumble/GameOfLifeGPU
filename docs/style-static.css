@@ -15,15 +15,6 @@ body {
     overflow: hidden;
 }
 
-.text {
-    font-size: 24px;
-    fill:#ffd5af;
-    text-shadow: 5px 5px #000000;
-    font-family: "Allerta Stencil", sans-serif;
-    font-weight: 400;
-    font-style: normal;
-    text-anchor: middle;
-}
 canvas{
     image-rendering: pixelated;
     width: 100vw;
